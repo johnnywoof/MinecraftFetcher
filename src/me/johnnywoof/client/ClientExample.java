@@ -1,10 +1,10 @@
 package me.johnnywoof.client;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.nio.BufferOverflowException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
@@ -39,31 +39,51 @@ public class ClientExample {
 				break;
 			}
 
-			System.out.println("Sending data: \"" + input + "\"");
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+			PrintWriter w = new PrintWriter(new OutputStreamWriter(out, charset));
+
+			w.println("PROFILE");
+			w.println(input);
+
+			w.close();
+
+			System.out.println("Fetching profile for \"" + input + "\"...");
 
 			//Filler
-			while (input.length() < 36) {
-				input += " ";
+			if (out.size() < 128) {
+				out.write(new byte[(128 - out.size())]);
+			} else if (out.size() > 128) {
+				throw new BufferOverflowException();
 			}
 
-			byte[] sendData = input.getBytes(charset);
+			out.close();
+
+			byte[] sendData = out.toByteArray();
 
 			DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, ip, serverPort);
 			clientSocket.send(sendPacket);
 
-			byte[] receiveData;
-
-			if (input.length() <= 16) {
-				receiveData = new byte[32];//UUID
-			} else {
-				receiveData = new byte[16];//Username
-			}
+			byte[] receiveData = new byte[128];
 
 			DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 			clientSocket.receive(receivePacket);
 
-			String modifiedSentence = new String(receivePacket.getData(), charset);
-			System.out.println("Server's response: " + modifiedSentence);
+			BufferedReader rr = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(receivePacket.getData()), charset));
+
+			String l;
+
+			System.out.println("---Server response---");
+
+			while ((l = rr.readLine()) != null && !l.isEmpty()) {
+
+				System.out.println(l);
+
+			}
+
+			System.out.println("----------------");
+
+			rr.close();
 
 		}
 

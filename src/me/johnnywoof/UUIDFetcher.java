@@ -24,7 +24,7 @@ public class UUIDFetcher {
 	 * @param username The username.
 	 * @return The UUID Profile, null if not found.
 	 */
-	public static UUIDProfile getUUID(String username) {
+	public static UUIDProfile fetchProfile(String username) {
 
 		try {
 

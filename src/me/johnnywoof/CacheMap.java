@@ -1,10 +1,10 @@
 package me.johnnywoof;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class CacheMap<K, V> extends HashMap<K, V> {
+public class CacheMap<K, V> extends ConcurrentHashMap<K, V> {
 
-	private final HashMap<Object, Long> timeCreated = new HashMap<>();
+	private final ConcurrentHashMap<Object, Long> timeCreated = new ConcurrentHashMap<>();
 	private final long expiresIn;
 
 	public CacheMap(long expiresIn) {
